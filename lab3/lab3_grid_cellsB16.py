@@ -89,6 +89,18 @@ def publishCells(grid):
 #Main handler of the project
 def run():
     global pub
+    global mapData
+    global resolution
+    global offsetX
+    global offsetY
+    global width
+    global height
+    resolution =0
+    offsetX = 0
+    offsetY = 0
+    width = 0
+    height = 0 
+    mapData = OccupancyGrid()
     rospy.init_node('lab3')
     sub = rospy.Subscriber("/map", OccupancyGrid, mapCallBack)
     pub = rospy.Publisher("/map_check", GridCells, queue_size=1)  
