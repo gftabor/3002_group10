@@ -70,7 +70,6 @@ def readStart(startPos):
     print startPos.pose.pose
 
 def aStar(start,goal):
-    def Astar():
     fringe = [];
     processed = [];
 
@@ -78,52 +77,51 @@ def aStar(start,goal):
     
     heapq.heappush(fringe,(0, n1))
 
-  while(1):
+    while(1):
     
-    if len(fringe) == 0:
-      print "no path"
-      break
-    processingNode = heapq.heappop(fringe)
+        if len(fringe) == 0:
+            print "no path"
+            break
+        processingNode = heapq.heappop(fringe)
 
-
-    if(processingNode.nodeX == goalX && processingNode.nodeY == goalY): #if processing goal or fringe empty
-      print "cost is %d" % processingNode.realCost
-      break
+        if(processingNode.nodeX == goalX && processingNode.nodeY == goalY): #if processing goal or fringe empty
+            print "cost is %d" % processingNode.realCost
+            break
     
-    print "processing %d,%d to find goal %d,%d" % (processingNode.nodeX, processingNode.nodeY, goalX, goalY)
+        print "processing %d,%d to find goal %d,%d" % (processingNode.nodeX, processingNode.nodeY, goalX, goalY)
 
-    for i in range(0,4):
-      x = processingNode.nodeX;
-      y = processingNode.nodeY;
-      if(i==0):
-          x++;
-      elif(i==1):
-          y++;
-      elif(i==1):
-          x--;
-      elif(i==1):
-          y--;
-      if(x <1 || y <1 || x>width || y >height):
-        continue;
-      if(grid.data[(x+1 + (y-1)*width)]==100): // if occupied
-        continue;
+        for i in range(0,4):
+            x = processingNode.nodeX
+            y = processingNode.nodeY
+            if(i==0):
+                x = x+1
+            elif(i==1):
+                y = y+1
+            elif(i==2):
+                x = x-1
+            elif(i==3):
+                y = y-1
+        if(x <1 or y <1 or x>width or y >height):
+            continue
+        if(grid.data[(x+1 + (y-1)*width)]==100): #if occupied
+            continue
 
-      wasProcessed=false;
-      for(j=0; j<processed.size();j++):
-        if(processed[j].nodeX==x&&processed[j].nodeY==y){
-          wasProcessed=true;
-          break;
-        }
-      }
-      if(wasProcessed)
-        continue;
-      int cost = dist(x,y,goalX,goalY) + processingNode.realCost +1;
-      node newNode(x,y,cost,processingNode.nodeX,processingNode.nodeY,processingNode.realCost +1);
-      fringe.push_back(newNode); std::push_heap (fringe.begin(),fringe.end(),Comp());
-    }
-    processed.push_back(processingNode);
-  }
-}
+        wasProcessed=false
+     
+        for j in range(0,len(processed)):
+            if(processed[j].nodeX==x and processed[j].nodeY==y)
+            wasProcessed=true
+            break
+        
+        if(wasProcessed):
+            continue
+
+        cost = dist(x,y,goalX,goalY) + processingNode.realCost +1
+        n2 = node(x,y,processingNode.nodeX,processingNode.nodeY,processingNode.realCost + 1)
+      
+        heapq.heappush(fringe,(cost, n2))
+        processed.append(processingNode)
+
 
 def publishCells(grid):
     global pub
