@@ -131,10 +131,14 @@ def aStar(start,goal):
       
         heapq.heappush(fringe,(cost, n2))
         processed.append(processingNode)
+        publishCells(processed)
+    createWay(processed)
+        
 
 
 def publishCells(grid):
     global pub
+    global pubway
     print "publishing"
 
     # resolution and offset of the map
@@ -155,11 +159,12 @@ def publishCells(grid):
                 point.y=(i*resolution)+offsetY - (.5 * resolution) # added secondary offset ... Magic ?
                 point.z=0
                 cells.cells.append(point)
-    pub.publish(cells)           
+    pubway.publish(cells)           
 
 #Main handler of the project
 def run():
     global pub
+    global pubway
     global mapData
     global resolution
     global offsetX
