@@ -69,9 +69,19 @@ def readStart(startPos):
     startPosY = startPos.pose.pose.position.y
     print startPos.pose.pose
 
+
+class node(object):
+    def __init__(self, x1, y1, x2, x2, costs):
+        self.x1 = x1
+        self.y1 = y1
+        self.x2 = x2
+        self.y2 = y2
+        self.costs = costs
+
+
 def aStar(start,goal):
-    fringe = [];
-    processed = [];
+    fringe = []
+    processed = []
 
     n1 = node(startX,startY,startX,startY,0)
     
@@ -84,7 +94,7 @@ def aStar(start,goal):
             break
         processingNode = heapq.heappop(fringe)
 
-        if(processingNode.nodeX == goalX && processingNode.nodeY == goalY): #if processing goal or fringe empty
+        if(processingNode.nodeX == goalX and processingNode.nodeY == goalY): #if processing goal or fringe empty
             print "cost is %d" % processingNode.realCost
             break
     
@@ -103,7 +113,7 @@ def aStar(start,goal):
                 y = y-1
         if(x <1 or y <1 or x>width or y >height):
             continue
-        if(grid.data[(x+1 + (y-1)*width)]==100): #if occupied
+        if(mapData.data[(x+1 + (y-1)*width)]==100): #if occupied
             continue
 
         wasProcessed=false
