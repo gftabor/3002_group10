@@ -70,16 +70,60 @@ def readStart(startPos):
     print startPos.pose.pose
 
 def aStar(start,goal):
-    pass
-    # create a new instance of the map
+    def Astar():
+    fringe = [];
+    processed = [];
 
-    # generate a path to the start and end goals by searching through the neighbors, refer to aStar_explanied.py
+    n1 = node(startX,startY,startX,startY,0)
+    
+    heapq.heappush(fringe,(0, n1))
 
-    # for each node in the path, process the nodes to generate GridCells and Path messages
+  while(1):
+    
+    if len(fringe) == 0:
+      print "no path"
+      break
+    processingNode = heapq.heappop(fringe)
 
-    # Publish points
 
-#publishes map to rviz using gridcells type
+    if(processingNode.nodeX == goalX && processingNode.nodeY == goalY): #if processing goal or fringe empty
+      print "cost is %d" % processingNode.realCost
+      break
+    
+    print "processing %d,%d to find goal %d,%d" % (processingNode.nodeX, processingNode.nodeY, goalX, goalY)
+
+    for i in range(0,4):
+      x = processingNode.nodeX;
+      y = processingNode.nodeY;
+      if(i==0):
+          x++;
+      elif(i==1):
+          y++;
+      elif(i==1):
+          x--;
+      elif(i==1):
+          y--;
+      if(x <1 || y <1 || x>width || y >height):
+        continue;
+      if(grid.data[(x+1 + (y-1)*width)]==100): // if occupied
+        continue;
+
+      wasProcessed=false;
+      for(j=0; j<processed.size();j++):
+        if(processed[j].nodeX==x&&processed[j].nodeY==y){
+          wasProcessed=true;
+          break;
+        }
+      }
+      if(wasProcessed)
+        continue;
+      int cost = dist(x,y,goalX,goalY) + processingNode.realCost +1;
+      node newNode(x,y,cost,processingNode.nodeX,processingNode.nodeY,processingNode.realCost +1);
+      fringe.push_back(newNode); std::push_heap (fringe.begin(),fringe.end(),Comp());
+    }
+    processed.push_back(processingNode);
+  }
+}
 
 def publishCells(grid):
     global pub
