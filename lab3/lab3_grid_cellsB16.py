@@ -12,7 +12,7 @@ def createWay(processed):
     global my_path
     my_path = Path()
     
-    while (currentX not starX or currentY not startY):
+    while (currentX is not starX or currentY is not startY):
         pose.pose.position.x = (currentX*resolution)+offsetX + (1.5 * resolution)
         pose.pose.position.y = (currenty*resolution)+offsetY - (.5 * resolution)
         pose.pose.orientation.w = 1
@@ -20,7 +20,7 @@ def createWay(processed):
         my_path.poses.append(pose)
         
         for i in range (0,len(processed)):
-            if (processed[i].nodeX == currentX and processed[i].nodeY == currentY):
+            if (processed[i].nodeX is currentX and processed[i].nodeY is currentY):
                 currentX = processed[i].parentX
                 currentY = processed[i].parentY
                 break
@@ -64,7 +64,7 @@ def readStart(startPos):
     print startPos.pose.pose
 
 class node(object):
-    def __init__(self, x1, y1, x2, x2, costs):
+    def __init__(self, x1, y1, x2, y2, costs):
         self.x1 = x1
         self.y1 = y1
         self.x2 = x2
@@ -86,7 +86,7 @@ def aStar(start,goal):
             break
         processingNode = heapq.heappop(fringe)
 
-        if(processingNode.nodeX == goalX and processingNode.nodeY == goalY): #if processing goal or fringe empty
+        if(processingNode.nodeX is goalX and processingNode.nodeY is goalY): #if processing goal or fringe empty
             print "cost is %d" % processingNode.realCost
             break
     
@@ -111,8 +111,8 @@ def aStar(start,goal):
         wasProcessed=false
      
         for j in range(0,len(processed)):
-            if(processed[j].nodeX==x and processed[j].nodeY==y)
-            wasProcessed=true
+            if(processed[j].nodeX == x and processed[j].nodeY == y):
+                wasProcessed=true
             break
         
         if(wasProcessed):
@@ -182,8 +182,6 @@ def run():
 
     # wait a second for publisher, subscribers, and TF
     rospy.sleep(1)
-
-
 
     while (1 and not rospy.is_shutdown()):
         publishCells(mapData) #publishing map data every 2 seconds
