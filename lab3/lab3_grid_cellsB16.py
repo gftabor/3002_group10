@@ -10,6 +10,7 @@ def createWay(processed):
     currentX = goalX
     currentY = goalY
     global my_path
+    global pub
     my_path = Path()
     
     while (currentX is not starX or currentY is not startY):
@@ -38,6 +39,8 @@ def mapCallBack(data):
     global resolution
     global offsetX
     global offsetY
+    global seenMap
+    seenMap = 1
     mapgrid = data
     resolution = data.info.resolution
     mapData = data.data
@@ -48,20 +51,22 @@ def mapCallBack(data):
     print data.info
 
 def readGoal(goal):
+    global seenGoal
     global goalX
     global goalY
     goalX= goal.pose.position.x
     goalY= goal.pose.position.y
     print goal.pose
-
+    seenGoal = 1
 
 def readStart(startPos):
-
+    global seenStart
     global startPosX
     global startPosY
     startPosX = startPos.pose.pose.position.x
     startPosY = startPos.pose.pose.position.y
     print startPos.pose.pose
+    seenStart = 1
 
 class node(object):
     def __init__(self, x1, y1, x2, y2, costs):
@@ -184,8 +189,10 @@ def run():
     rospy.sleep(1)
 
     while (1 and not rospy.is_shutdown()):
-        publishCells(mapData) #publishing map data every 2 seconds
-        rospy.sleep(2)  
+        #publishCells(mapData) #publishing map data every 2 seconds
+        #rospy.sleep(2)  
+        if(seenStart and seenGoal and seenMap)
+            #call Astar
         print("Complete")
     
 
