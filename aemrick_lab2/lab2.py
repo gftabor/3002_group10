@@ -2,7 +2,7 @@
 
 import rospy, tf, numpy, math
 from kobuki_msgs.msg import BumperEvent
-from std_msgs.msg import String
+from std_msgs.msg import String, Header
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Pose
@@ -75,6 +75,8 @@ def navToPose(goal):
     #finish orientation
     rotate(desiredT)
     #chill for a little
+    newHeader = Header()
+    header_pub.publish(newHeader)
     rospy.sleep(.15)
 
 #This function accepts a speed and a distance for the robot to move in straight line
@@ -109,11 +111,11 @@ def faceAngle(angle):
     error = angle - math.degrees(pose.orientation.z) #calculate error
         
     while(math.fabs(error) >=2 and not rospy.is_shutdown()): #if you haven't reached the goal and you're still trying to
-	error = angle - math.degrees(pose.orientation.z) #recalculate error since you've probably moved
+    error = angle - math.degrees(pose.orientation.z) #recalculate error since you've probably moved
         while(math.fabs(error)>180):
             error = error - math.copysign(360,error) #if you ended up turned 180, fix your error calculation
     
-	publishTwist(0,math.copysign(1,error)) #set angular velocity to degrees to specified angle    
+    publishTwist(0,math.copysign(1,error)) #set angular velocity to degrees to specified angle    
 
 #rotates a certain number of degrees, angle, regardless of global positioning
 def rotate(angle):
@@ -132,9 +134,9 @@ def driveArc(radius, speed, angleArc):
     calcAngle = math.degrees(pose.orientation.z) + angleArc
     #put angle in a sensical range
     if (calcAngle > 360):
-    	calcAngle -= 360
+        calcAngle -= 360
     if (calcAngle > 180):
-    	calcAngle = (-360 + calcAngle)
+        calcAngle = (-360 + calcAngle)
 
     #calculates error, difference in desired angle and actual angle
     error = calcAngle-math.degrees(pose.orientation.z)
@@ -187,13 +189,14 @@ if __name__ == '__main__':
     global pose
     global odom_tf
     global odom_list
+    global header_pub
     pose = Pose()
     
     #Publishers and Subscribers
     pub = rospy.Publisher('/cmd_vel_mux/input/teleop', Twist, None, queue_size=10) # Publisher for commanding robot motion
     bumper_sub = rospy.Subscriber('/mobile_base/events/bumper', BumperEvent, readBumper, queue_size=1) # Callback function to handle bumper events
-    goal_sub = rospy.Subscriber('/test', PoseStamped, navToPose, queue_size=1)
- 
+    goal_sub = rospy.Subscriber('/way_point', PoseStamped, navToPose, queue_size=100)
+    header_pub = rospy.Publisher('Way_point_success', Header,queue_size=1)
     # Use this object to get the robot's Odometry 
     odom_list = tf.TransformListener()
     
@@ -209,7 +212,7 @@ if __name__ == '__main__':
     #publishTwist(.2,0)
     #driveArc(0.4,0.15,90)
     while (not rospy.is_shutdown()):
-	    rospy.spin()
+        rospy.spin()
 
     print "Lab 2 complete!"
 
