@@ -1,0 +1,15 @@
+CURRENT STATE
+robot drives along path computed by A*
+path is a little obtuse
+
+uses 
+lab 2 from alex 
+lab 3 either c++ or python
+lab 4 for helper publishing 
+
+
+
+TODO
+-read in map, publish new map with borders expanded (Brandon)
+-make waypoint list less obtuse (currently it is every single point instead of only points that contain turns) (Griffin)
+-finish making python A* fully work with tests (Alex)
