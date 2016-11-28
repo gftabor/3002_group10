@@ -1,14 +1,9 @@
 #!/usr/bin/env python
 
-import rospy
 from nav_msgs.msg import GridCells
 from std_msgs.msg import String
 from geometry_msgs.msg import Twist, Point, Pose, PoseStamped, PoseWithCovarianceStamped
 from nav_msgs.msg import Odometry, OccupancyGrid
-from kobuki_msgs.msg import BumperEvent
-import tf
-import numpy
-import math 
 import rospy, tf, numpy, math
 
 def createWay(processed):
@@ -58,7 +53,6 @@ def readGoal(goal):
     goalX= goal.pose.position.x
     goalY= goal.pose.position.y
     print goal.pose
-    # Start Astar
 
 
 def readStart(startPos):
@@ -69,7 +63,6 @@ def readStart(startPos):
     startPosY = startPos.pose.pose.position.y
     print startPos.pose.pose
 
-
 class node(object):
     def __init__(self, x1, y1, x2, x2, costs):
         self.x1 = x1
@@ -77,7 +70,6 @@ class node(object):
         self.x2 = x2
         self.y2 = y2
         self.costs = costs
-
 
 def aStar(start,goal):
     fringe = []
@@ -156,7 +148,7 @@ def publishCells(grid):
             if (grid[k] == 100):
                 point=Point()
                 point.x=(j*resolution)+offsetX + (1.5 * resolution) # added secondary offset 
-                point.y=(i*resolution)+offsetY - (.5 * resolution) # added secondary offset ... Magic ?
+                point.y=(i*resolution)+offsetY - (.5 * resolution)
                 point.z=0
                 cells.cells.append(point)
     pubway.publish(cells)           
