@@ -31,26 +31,36 @@ def obstacleExpansion(grid):
 
 	#Runs through all cells in the grid.
 	for i in cells:
-		#If a cell is not an obstacle and is too close to an obstacle add it to the array that will make designated cells obstacles.
-		if (cells[i] < 20) and isCloseToObstacle(cells[i], 0):
-			toBeObstacle.append(cells[i])
+		#If a cell is an obstacle the loop will make the four adjacent cells obstacles.
+		if (cells[i] > 40):
+			#Calculates edge case for the cell left of the given obstacle cell.
+			if(i%grid.data.width == 0):
+				left = i
+			else:
+				left = i-1;
 
-	#Makes cells in toBeObstacle obstacles.
-	for j in toBeObstacle:
-		toBeObstacle.cells[j].isObstacle = True
+			#Calculates edge case for the cell right of the given obstacle cell.
+			if(i%grid.data.width == grid.data.width-1):
+				right = i
+			else:
+				right = i+1
 
-#Recursive function returns true if the cell passed is an obstacle, false if far away cells are not obstacles.
-def isCloseToObstacle(cell, startingLoc, distFromStart):
-	#BASE1: If cell reached is an obstacle return true.
-	if(cell.isObstacle):
-		return True
-	#BASE2: If distance from original cell is too long return false.
-	elif(distFromStart>3):
-		return False
-	#Check all adjacent cells if no base case is met.
-	else: #TODO Math to get cell locations of top and bottom cells.
-		return isCloseToObstacle(cells[startingLoc-1],startingLoc-1,distFromStart+1) and isCloseToObstacle(cells[startingLoc+1],startingLoc+1,distFromStart+1) and isCloseToObstacle() and isCloseToObstacle()
+			#Calculates edge case for the cell top of the given obstacle cell.
+			if(i-grid.data.width < 0):
+				top = i
+			else:
+				top = i-width
 
+			#Calculates edge case for the cell bottom of the given obstacle cell.
+			if(i+grid.data.width > grid.data.width*grid.data.height-1):
+				bottom = i
+			else:
+				bottom = i+grid.data.width
+
+			cells[left] = cells[i]
+			cells[right] = cells[i]
+			cells[top] = cells[i]
+			cells[bottom] = cells[i]
 
 
 def waypoint_callback():
