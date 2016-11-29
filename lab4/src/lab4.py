@@ -90,6 +90,9 @@ def run():
 	rospy.init_node('move_robot', anonymous=True)
 	path_sub = rospy.Subscriber('totes_path', Path, path_callback, queue_size=1) #change topic for best results
 	pointpub = rospy.Publisher("way_point", PoseStamped, queue_size=100)
+	mappub = rospy.Publisher("/map_real", OccupancyGrid, queue_size=1)
+
+	mapsub = rospy.Subscriber('/map',OccupancyGrid,obstacleExpansion, queue_size=1)
     # spin() simply keeps python from exiting until this node is stopped
 	rospy.spin()
 
