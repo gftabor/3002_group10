@@ -3,19 +3,22 @@
 from nav_msgs.msg import GridCells
 from std_msgs.msg import String
 from geometry_msgs.msg import Twist, Point, Pose, PoseStamped, PoseWithCovarianceStamped
-from nav_msgs.msg import Odometry, OccupancyGrid
-import rospy, tf, numpy, math
+from nav_msgs.msg import Odometry, OccupancyGrid, Path
+import rospy, tf, numpy, math, heapq
 
 def createWay(processed):
     currentX = goalX
     currentY = goalY
     global my_path
     global pub
+    global startX
+    global startY
     my_path = Path()
+    pose = PoseStamped()
     
-    while (currentX is not starX or currentY is not startY):
+    while (currentX is not startPosX or currentY is not startPosY):
         pose.pose.position.x = (currentX*resolution)+offsetX + (1.5 * resolution)
-        pose.pose.position.y = (currenty*resolution)+offsetY - (.5 * resolution)
+        pose.pose.position.y = (currentY*resolution)+offsetY - (.5 * resolution)
         pose.pose.orientation.w = 1
         
         my_path.poses.append(pose)
@@ -68,7 +71,7 @@ def readStart(startPos):
     print startPos.pose.pose
     seenStart = 1
 
-class node(object):
+class node:
     def __init__(self, x1, y1, x2, y2, costs):
         self.x1 = x1
         self.y1 = y1
@@ -76,11 +79,20 @@ class node(object):
         self.y2 = y2
         self.costs = costs
 
-def aStar(start,goal):
+    def getX(self):
+        return self.x1
+
+    def getY(self):
+        return self.y1
+    
+    def getCost(self):
+        return self.costs
+
+def astar():
     fringe = []
     processed = []
 
-    n1 = node(startX,startY,startX,startY,0)
+    n1 = node(startPosX,startPosY,startPosX,startPosY,0)
     
     heapq.heappush(fringe,(0, n1))
 
@@ -89,25 +101,25 @@ def aStar(start,goal):
         if len(fringe) == 0:
             print "no path"
             break
-        processingNode = heapq.heappop(fringe)
+        processingNode = heapq.heappop(fringe)[1]
 
-        if(processingNode.nodeX is goalX and processingNode.nodeY is goalY): #if processing goal or fringe empty
-            print "cost is %d" % processingNode.realCost
+        if(processingNode.getX() is goalX and processingNode.getY() is goalY): #if processing goal or fringe empty
+            print "cost is %d" % processingNode.getCost()
             break
     
-        print "processing %d,%d to find goal %d,%d" % (processingNode.nodeX, processingNode.nodeY, goalX, goalY)
+        #print "processing %d,%d to find goal %d,%d" % (processingNode[0], processingNode[1], goalX, goalY)
 
-        for i in range(0,4):
-            x = processingNode.nodeX
-            y = processingNode.nodeY
+        for i in range(0,3):
+            x = processingNode.getX()
+            y = processingNode.getY()
             if(i==0):
-                x = x+1
+                x += (1)
             elif(i==1):
-                y = y+1
+                y += (1)
             elif(i==2):
-                x = x-1
+                x -= (1)
             elif(i==3):
-                y = y-1
+                y -= (1)
         if(x <1 or y <1 or x>width or y >height):
             continue
         if(mapData.data[(x+1 + (y-1)*width)]==100): #if occupied
@@ -116,15 +128,15 @@ def aStar(start,goal):
         wasProcessed=false
      
         for j in range(0,len(processed)):
-            if(processed[j].nodeX == x and processed[j].nodeY == y):
+            if(processed[j].getX() == x and processed[j].getY() == y):
                 wasProcessed=true
             break
         
         if(wasProcessed):
             continue
 
-        cost = dist(x,y,goalX,goalY) + processingNode.realCost +1
-        n2 = node(x,y,processingNode.nodeX,processingNode.nodeY,processingNode.realCost + 1)
+        cost = dist(x,y,goalX,goalY) + processingNode[4] +1
+        n2 = node(x,y,processingNode.getX(),processingNode.getY(),processingNode.getCost() + 1)
       
         heapq.heappush(fringe,(cost, n2))
         processed.append(processingNode)
@@ -169,6 +181,16 @@ def run():
     global width
     global height
     global my_path
+    global seenGoal
+    global goalX
+    global goalY
+    global seenStart
+    global startPosX
+    global startPosY
+    global seenMap
+    seenGoal = 0
+    seenStart = 0
+    seenMap = 0
     resolution =0
     offsetX = 0
     offsetY = 0
@@ -191,9 +213,9 @@ def run():
     while (1 and not rospy.is_shutdown()):
         #publishCells(mapData) #publishing map data every 2 seconds
         #rospy.sleep(2)  
-        if(seenStart and seenGoal and seenMap)
-            #call Astar
-        print("Complete")
+        if(seenStart and seenGoal and seenMap):
+            astar()
+            print("ASTAR")
     
 
 
