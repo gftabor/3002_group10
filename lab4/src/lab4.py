@@ -67,7 +67,7 @@ def waypoint_callback():
 	global pointpub
 	global path
 	global index
-	if(index<length)
+	if(index<length):
 		pointpub.publish(path[index])
 	index = index + 1
 
@@ -84,7 +84,9 @@ if __name__ == '__main__':
 
 	global mapGrid
 
+	rospy.set_param('/move_base/global_costmap/inflation_layer/inflation_radius', '20')
 
+#/move_base/global_costmap/inflation_layer/inflation_radius
 
 	run()
     
