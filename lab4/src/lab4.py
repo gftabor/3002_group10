@@ -14,7 +14,9 @@ def path_callback(input_path):
 	length =  len(input_path.poses)
 	print length
 	#flip list around
-	path = optimize_path(reversed(input_path.poses))
+	path = list(input_path.poses)
+	path.reverse()
+	path = optimize_path(path)
 	#publish first goal in list
 	pointpub.publish(path[0])
 	index = 1
@@ -24,7 +26,7 @@ def optimize_path(shitty_path):
 	good_path.append(shitty_path[0])
 	for i, PoseStamped in enumerate(shitty_path):
 		usefulPoint = 1
-		if(i is not len(shitty_path) and i is not 0):
+		if(i is not len(shitty_path)-1 and i is not 0):
 			next = shitty_path[i+1]
 			last = shitty_path[i-1]
 			if(str(next.pose.position.x - PoseStamped.pose.position.x) is str(PoseStamped.pose.position.x - last.pose.position.x)):
@@ -103,6 +105,7 @@ def checkTimesExpanded(resolution):
 	timesExpanded = timesExpanded+1
 
 	if(timesExpanded >= 0.35/resolution):
+		timesExpanded=0
 		return True
 	else:
 		return False
@@ -125,7 +128,7 @@ def run():
 	global pointpub
 	global mappub
 	rospy.init_node('move_robot', anonymous=True)
-	path_sub = rospy.Subscriber('totes_path', Path, path_callback, queue_size=1) #change topic for best results
+	path_sub = rospy.Subscriber('/totes_path', Path, path_callback, queue_size=1) #change topic for best results
 	pointpub = rospy.Publisher("way_point", PoseStamped, queue_size=100)
 	mappub = rospy.Publisher("/map_real", OccupancyGrid, queue_size=1)
 

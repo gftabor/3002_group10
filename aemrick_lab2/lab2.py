@@ -53,6 +53,7 @@ def publishTwist(linearVelocity, angularVelocity):
 
 def navToPose(goal):
     #use global x,y,and theta
+    print 'saw pos'
     global xPosition
     global yPosition
     global theta
@@ -64,12 +65,15 @@ def navToPose(goal):
     q = [quat.x, quat.y, quat.z, quat.w]
     roll, pitch, yaw = euler_from_quaternion(q)
     desiredT = math.degrees(yaw)
+
     #compute distance to goal
     distance = math.sqrt((desiredX - xPosition)**2 + (desiredY - yPosition)**2)
     #compute initial turn amount
     angle = math.degrees(math.atan2(desiredY - yPosition, desiredX - xPosition))
+
     #turn to initial angle
     rotate(angle)
+    print 'did pose'
     #drive to goal
     driveStraight(0.25, distance)
     #finish orientation
@@ -77,6 +81,7 @@ def navToPose(goal):
     #chill for a little
     newHeader = Header()
     header_pub.publish(newHeader)
+
     rospy.sleep(.15)
 
 #This function accepts a speed and a distance for the robot to move in straight line
@@ -109,13 +114,13 @@ def faceAngle(angle):
         angle=angle - math.copysign(360, angle) #make angle in readable range
 
     error = angle - math.degrees(pose.orientation.z) #calculate error
-        
+     
     while(math.fabs(error) >=2 and not rospy.is_shutdown()): #if you haven't reached the goal and you're still trying to
-    error = angle - math.degrees(pose.orientation.z) #recalculate error since you've probably moved
+        error = angle - math.degrees(pose.orientation.z) #recalculate error since you've probably moved
         while(math.fabs(error)>180):
             error = error - math.copysign(360,error) #if you ended up turned 180, fix your error calculation
-    
-    publishTwist(0,math.copysign(1,error)) #set angular velocity to degrees to specified angle    
+        print error
+        publishTwist(0,math.copysign(1,error)) #set angular velocity to degrees to specified angle    
 
 #rotates a certain number of degrees, angle, regardless of global positioning
 def rotate(angle):
