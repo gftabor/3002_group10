@@ -35,14 +35,16 @@ def optimize_path(shitty_path):
 	return good_path
 
 #Expands obstacles in the grid to allow easier navagation.
-def obstacleExpansion(grid):
+def obstacleExpansion(grid, timesExpanded):
 	global mappub
+
 	#TODO put all cells in grid in a global array.
 	cells = grid.data
 
 	#This array is used to designate the index of cells that will become obstacles.
 	toBeObstacle = []
 
+	print "started"
 	#Runs through all cells in the grid.
 	for i in range(0,len(cells)):
 		#If a cell is an obstacle the loop will make the four adjacent cells obstacles.
@@ -78,8 +80,6 @@ def obstacleExpansion(grid):
 			toBeObstacle.append(top)
 			toBeObstacle.append(bottom)
 
-			print left
-
 	#Loops through the array and changes each value in the array of cells to determine an obstacle.
 	l = list(grid.data)
 	for j in range(0,len(toBeObstacle)):
@@ -88,10 +88,13 @@ def obstacleExpansion(grid):
 	newGrid = OccupancyGrid()
 	newGrid.info = grid.info
 	newGrid.data = l
-	#Publishes the grid as a changed map.
-	mappub.publish(newGrid)
-	print "done"
-
+	
+	#Publishes the grid as a changed map if expanded enough, else expands again.
+	if(timesExpanded >= 35/grid.info.resolution):
+		mappub.publish(newGrid)
+		print "done"
+	else:
+		obstacleExpansion(newGrid, timesExpanded+1)
 
 
 def waypoint_callback():
@@ -108,7 +111,7 @@ def run():
 	rospy.init_node('move_robot', anonymous=True)
 	path_sub = rospy.Subscriber('totes_path', Path, path_callback, queue_size=1) #change topic for best results
 	pointpub = rospy.Publisher("way_point", PoseStamped, queue_size=100)
-	mappub = rospy.Publisher("map_real", OccupancyGrid, queue_size=1)
+	mappub = rospy.Publisher("/map_real", OccupancyGrid, queue_size=1)
 
 	mapsub = rospy.Subscriber('/map',OccupancyGrid,obstacleExpansion, queue_size=1)
     # spin() simply keeps python from exiting until this node is stopped
