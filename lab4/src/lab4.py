@@ -23,7 +23,7 @@ def optimize_path(shitty_path):
 	good_path = []
 	good_path.append(shitty_path[0])
 	for i, PoseStamped in enumerate(shitty_path):
-	usefulPoint = 1
+		usefulPoint = 1
 		if(i is not len(shitty_path) and i is not 0):
 			next = shitty_path[i+1]
 			last = shitty_path[i-1]
@@ -40,36 +40,37 @@ def obstacleExpansion(grid):
 	#TODO put all cells in grid in a global array.
 	cells = grid.data
 
-	#This array is used to designate cells that will become obstacles.
+	#This array is used to designate the index of cells that will become obstacles.
 	toBeObstacle = []
 
 	#Runs through all cells in the grid.
-	for i in cells:
+	for i in range(0,len(cells)):
 		#If a cell is an obstacle the loop will make the four adjacent cells obstacles.
+
 		if (cells[i] > 40):
 			#Calculates edge case for the cell left of the given obstacle cell.
-			if(i%grid.data.width == 0):
+			if(i%grid.info.width == 0):
 				left = i
 			else:
 				left = i-1;
 
 			#Calculates edge case for the cell right of the given obstacle cell.
-			if(i%grid.data.width == grid.data.width-1):
+			if(i%grid.info.width == grid.info.width-1):
 				right = i
 			else:
 				right = i+1
 
 			#Calculates edge case for the cell top of the given obstacle cell.
-			if(i-grid.data.width < 0):
+			if(i-grid.info.width < 0):
 				top = i
 			else:
-				top = i-width
+				top = i-grid.info.width
 
 			#Calculates edge case for the cell bottom of the given obstacle cell.
-			if(i+grid.data.width > grid.data.width*grid.data.height-1):
+			if(i+grid.info.width > grid.info.width*grid.info.height-1):
 				bottom = i
 			else:
-				bottom = i+grid.data.width
+				bottom = i+grid.info.width
 
 			#Adds the location of the given cells to the array to be changed.
 			toBeObstacle.append(left)
@@ -77,10 +78,13 @@ def obstacleExpansion(grid):
 			toBeObstacle.append(top)
 			toBeObstacle.append(bottom)
 
-	#Loops through the array and changes each value in the array of cells to determine an obstacle.
-	for j in toBeObstacle:
-		grid.data[j] = 100
+			print left
 
+	#Loops through the array and changes each value in the array of cells to determine an obstacle.
+	for j in range(0,len(toBeObstacle)):
+		grid.data[toBeObstacle[j]] = 100
+
+	print 'done'
 	#Publishes the grid as a changed map.
 	mappub.publish(grid)
 
@@ -95,6 +99,7 @@ def waypoint_callback():
 
 def run():
 	global pointpub
+	global mappub
 	rospy.init_node('move_robot', anonymous=True)
 	path_sub = rospy.Subscriber('totes_path', Path, path_callback, queue_size=1) #change topic for best results
 	pointpub = rospy.Publisher("way_point", PoseStamped, queue_size=100)
