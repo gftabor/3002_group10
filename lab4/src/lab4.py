@@ -81,10 +81,11 @@ def obstacleExpansion(grid):
 			print left
 
 	#Loops through the array and changes each value in the array of cells to determine an obstacle.
+	l = list(grid.data)
 	for j in range(0,len(toBeObstacle)):
-		grid.data[toBeObstacle[j]] = 100
+		l[toBeObstacle[j]] = 100
 
-	print 'done'
+		print 'done'
 	#Publishes the grid as a changed map.
 	mappub.publish(grid)
 
