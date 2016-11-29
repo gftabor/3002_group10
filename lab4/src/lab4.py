@@ -71,10 +71,18 @@ def obstacleExpansion(grid):
 			else:
 				bottom = i+grid.data.width
 
-			cells[left] = cells[i]
-			cells[right] = cells[i]
-			cells[top] = cells[i]
-			cells[bottom] = cells[i]
+			#Adds the location of the given cells to the array to be changed.
+			toBeObstacle.append(left)
+			toBeObstacle.append(right)
+			toBeObstacle.append(top)
+			toBeObstacle.append(bottom)
+
+	#Loops through the array and changes each value in the array of cells to determine an obstacle.
+	for j in toBeObstacle:
+		grid.data[j] = 100
+
+	#Publishes the grid as a changed map.
+	mappub.publish(grid)
 
 
 def waypoint_callback():
