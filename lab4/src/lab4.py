@@ -36,7 +36,7 @@ def optimize_path(shitty_path):
 
 #Expands obstacles in the grid to allow easier navagation.
 def obstacleExpansion(grid):
-
+	global mappub
 	#TODO put all cells in grid in a global array.
 	cells = grid.data
 
@@ -85,9 +85,13 @@ def obstacleExpansion(grid):
 	for j in range(0,len(toBeObstacle)):
 		l[toBeObstacle[j]] = 100
 
-		print 'done'
+	newGrid = OccupancyGrid()
+	newGrid.info = grid.info
+	newGrid.data = l
 	#Publishes the grid as a changed map.
-	mappub.publish(grid)
+	mappub.publish(newGrid)
+	print "done"
+
 
 
 def waypoint_callback():
@@ -104,7 +108,7 @@ def run():
 	rospy.init_node('move_robot', anonymous=True)
 	path_sub = rospy.Subscriber('totes_path', Path, path_callback, queue_size=1) #change topic for best results
 	pointpub = rospy.Publisher("way_point", PoseStamped, queue_size=100)
-	mappub = rospy.Publisher("/map_real", OccupancyGrid, queue_size=1)
+	mappub = rospy.Publisher("map_real", OccupancyGrid, queue_size=1)
 
 	mapsub = rospy.Subscriber('/map',OccupancyGrid,obstacleExpansion, queue_size=1)
     # spin() simply keeps python from exiting until this node is stopped
