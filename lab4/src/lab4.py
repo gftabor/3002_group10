@@ -35,7 +35,7 @@ def optimize_path(shitty_path):
 	return good_path
 
 #Expands obstacles in the grid to allow easier navagation.
-def obstacleExpansion(grid, timesExpanded):
+def obstacleExpansion(grid):
 	global mappub
 
 	#TODO put all cells in grid in a global array.
@@ -88,13 +88,26 @@ def obstacleExpansion(grid, timesExpanded):
 	newGrid = OccupancyGrid()
 	newGrid.info = grid.info
 	newGrid.data = l
-	
+
 	#Publishes the grid as a changed map if expanded enough, else expands again.
-	if(timesExpanded >= 35/grid.info.resolution):
+	if(checkTimesExpanded(grid.info.resolution)):
 		mappub.publish(newGrid)
-		print "done"
 	else:
-		obstacleExpansion(newGrid, timesExpanded+1)
+		obstacleExpansion(newGrid)
+
+def checkTimesExpanded(resolution):
+	global timesExpanded
+
+	print timesExpanded
+
+	timesExpanded = timesExpanded+1
+
+	if(timesExpanded >= 0.35/resolution):
+		return True
+	else:
+		return False
+
+	
 
 
 def waypoint_callback():
@@ -106,6 +119,9 @@ def waypoint_callback():
 	index = index + 1
 
 def run():
+
+	
+
 	global pointpub
 	global mappub
 	rospy.init_node('move_robot', anonymous=True)
@@ -120,7 +136,11 @@ def run():
 
 if __name__ == '__main__':
 
+	global timesExpanded
+	timesExpanded = 0
+
 	global mapGrid
+
 
 	rospy.set_param('/move_base/global_costmap/inflation_layer/inflation_radius', '20')
 
