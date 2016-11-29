@@ -6,6 +6,9 @@ from geometry_msgs.msg import Twist, Point, Pose, PoseStamped, PoseWithCovarianc
 from nav_msgs.msg import Odometry, OccupancyGrid, Path
 import rospy, tf, numpy, math, heapq
 
+def dist(x1, y1, x2, y2):
+    return math.sqrt((x2-x1)**2 + (y2-y1)**2)
+
 def createWay(processed):
     currentX = goalX
     currentY = goalY
@@ -51,24 +54,25 @@ def mapCallBack(data):
     height = data.info.height
     offsetX = data.info.origin.position.x
     offsetY = data.info.origin.position.y
-    print data.info
+    #print data.info
 
 def readGoal(goal):
     global seenGoal
     global goalX
     global goalY
-    goalX= goal.pose.position.x
-    goalY= goal.pose.position.y
-    print goal.pose
+    goalX = int((goal.pose.position.x - offsetX)/resolution -1.5)
+    goalY = int((goal.pose.position.y - offsetY)/resolution +0.5)
+    #print goal.pose
     seenGoal = 1
 
 def readStart(startPos):
     global seenStart
     global startPosX
     global startPosY
-    startPosX = startPos.pose.pose.position.x
-    startPosY = startPos.pose.pose.position.y
-    print startPos.pose.pose
+    startPosX = int((startPos.pose.pose.position.x - offsetX)/resolution -1.5)
+
+    startPosY = int((startPos.pose.pose.position.y - offsetY)/resolution +0.5)
+    #print startPos.pose.pose
     seenStart = 1
 
 class node:
@@ -96,8 +100,7 @@ def astar():
     
     heapq.heappush(fringe,(0, n1))
 
-    while(1):
-    
+    while(1 and not rospy.is_shutdown()):
         if len(fringe) == 0:
             print "no path"
             break
@@ -107,9 +110,19 @@ def astar():
             print "cost is %d" % processingNode.getCost()
             break
     
+        wasProcessed=0
+     
+        for n in processed:
+            if(int(n.getX()) is int(processingNode.getX()) and int(processingNode.getY()) is int(n.getY())):
+                print "removed"
+                wasProcessed=1
+                break
+        
+        if(wasProcessed is 1):
+            continue
         #print "processing %d,%d to find goal %d,%d" % (processingNode[0], processingNode[1], goalX, goalY)
-
-        for i in range(0,3):
+        print "processing"
+        for i in range(0,4):
             x = processingNode.getX()
             y = processingNode.getY()
             if(i==0):
@@ -120,54 +133,41 @@ def astar():
                 x -= (1)
             elif(i==3):
                 y -= (1)
-        if(x <1 or y <1 or x>width or y >height):
-            continue
-        if(mapData.data[(x+1 + (y-1)*width)]==100): #if occupied
-            continue
+            if(x <1 or y <1 or x>width or y >height):
+                continue
+            if(mapData[(x+1 + (y-1)*width)]==100): #if occupied
+                continue
 
-        wasProcessed=false
-     
-        for j in range(0,len(processed)):
-            if(processed[j].getX() == x and processed[j].getY() == y):
-                wasProcessed=true
-            break
-        
-        if(wasProcessed):
-            continue
-
-        cost = dist(x,y,goalX,goalY) + processingNode[4] +1
-        n2 = node(x,y,processingNode.getX(),processingNode.getY(),processingNode.getCost() + 1)
-      
-        heapq.heappush(fringe,(cost, n2))
+           
+            #print len(fringe)
+            cost = dist(x,y,goalX,goalY) + processingNode.getCost() +1
+            n2 = node(x,y,processingNode.getX(),processingNode.getY(),processingNode.getCost() + 1)
+            heapq.heappush(fringe,(cost, n2))
         processed.append(processingNode)
+        print "processed"
+        print len(processed)
         publishCells(processed)
     createWay(processed)
         
 
 
-def publishCells(grid):
+def publishCells(nodes):
     global pub
     global pubway
-    print "publishing"
 
     # resolution and offset of the map
-    k=0
     cells = GridCells()
     cells.header.frame_id = 'map'
     cells.cell_width = resolution 
     cells.cell_height = resolution
 
-    for i in range(1,height): #height should be set to hieght of grid
-        k=k+1
-        for j in range(1,width): #width should be set to width of grid
-            k=k+1
-            #print k # used for debugging
-            if (grid[k] == 100):
-                point=Point()
-                point.x=(j*resolution)+offsetX + (1.5 * resolution) # added secondary offset 
-                point.y=(i*resolution)+offsetY - (.5 * resolution)
-                point.z=0
-                cells.cells.append(point)
+    
+    for node in nodes: #width should be set to width of grid
+        point=Point()
+        point.x=(node.getX()*resolution)+offsetX + (1.5 * resolution) # added secondary offset 
+        point.y=(node.getY()*resolution)+offsetY - (.5 * resolution)
+        point.z=0
+        cells.cells.append(point)
     pubway.publish(cells)           
 
 #Main handler of the project
@@ -196,7 +196,7 @@ def run():
     offsetY = 0
     width = 0
     height = 0 
-    mapData = OccupancyGrid()
+    mapgrid = OccupancyGrid()
     #initiliaze variables so they mapcallback not being run does not crash program
 
     rospy.init_node('lab3')
