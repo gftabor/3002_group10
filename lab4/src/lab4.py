@@ -115,11 +115,14 @@ def checkTimesExpanded(resolution):
 
 def waypoint_callback():
 	global pointpub
+	global startFlag
 	global path
 	global index
-	if(index<length):
-		pointpub.publish(path[index])
-	index = index + 1
+	if(startFlag == 1)
+		if(index<length):
+			pointpub.publish(path[index])
+		index = index + 1
+	startFlag = 1
 
 def run():
 

@@ -53,6 +53,7 @@ def publishTwist(linearVelocity, angularVelocity):
 
 def navToPose(goal):
     #use global x,y,and theta
+    global header_pub
     print 'saw pos'
     global xPosition
     global yPosition
@@ -210,12 +211,14 @@ if __name__ == '__main__':
 
     print "Starting Lab 2"
     
-    #All Things Happens
-    # Make the robot do stuff...
-    #driveStraight(.1,.2)
-    #rotate(45)
-    #publishTwist(.2,0)
-    #driveArc(0.4,0.15,90)
+    rotate(90)
+    rotate(90)
+    rotate(90)
+    rotate(90)
+
+    newHeader = Header()
+    header_pub.publish(newHeader)
+    
     while (not rospy.is_shutdown()):
         rospy.spin()
 
