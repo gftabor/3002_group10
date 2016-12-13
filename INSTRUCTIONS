@@ -7,8 +7,13 @@ Once Per file
 chmod +x lab2.py
 chmod +x lab4.py
 
+Once per terminal
+source devel/setup.bash
+
+
 TO RUN
 roslaunch src/3002_group10/final.launch 
+
 
 
 

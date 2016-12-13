@@ -7,7 +7,9 @@
 
   <node name="rviz" pkg="rviz" type="rviz" />
 
- 
+  <param name="minimumScore" value="100" />
+
+  <param name="angularUpdate" value="0.1" />
 
 
 </launch>
