@@ -211,10 +211,15 @@ if __name__ == '__main__':
 
     print "Starting Lab 2"
     
-    rotate(90)
-    rotate(90)
-    rotate(90)
-    rotate(90)
+    faceAngle(0)
+    faceAngle(90)
+    faceAngle(180)
+    faceAngle(-90)
+    faceAngle(0)
+    faceAngle(90)
+    faceAngle(180)
+
+
 
     newHeader = Header()
     header_pub.publish(newHeader)
