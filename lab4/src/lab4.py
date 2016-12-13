@@ -118,7 +118,7 @@ def waypoint_callback():
 	global startFlag
 	global path
 	global index
-	if(startFlag == 1)
+	if(startFlag == 1):
 		if(index<length):
 			pointpub.publish(path[index])
 		index = index + 1
