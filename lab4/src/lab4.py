@@ -40,7 +40,7 @@ def optimize_path(shitty_path):
 def obstacleExpansion(grid):
 	global mappub
 
-	#TODO put all cells in grid in a global array.
+	#Put all cells in grid in a global array.
 	cells = grid.data
 
 	#This array is used to designate the index of cells that will become obstacles.
@@ -123,6 +123,37 @@ def waypoint_callback():
 			pointpub.publish(path[index])
 		index = index + 1
 	startFlag = 1
+
+
+#Recursive function. Takes in a grid and starting cell location and returns the numerical location 
+#in the list of cells of the closest frontier, -1 if none exist in the enclosed space.
+def getClosestFronteir(grid, cellLoc):
+	#Define the list of cells as the grid's cells.
+	cells = grid.data
+
+	#BASE CASE: If the cell is a fronteir, return the location of the cell.
+	if(cells[cellLoc] == -1):
+		return cellLoc
+
+	#RECURSIVE CASE: If the cell is known run recursion on all four nearby cells.
+	elif(cells[cellLoc] == 0):
+		#If left cell exists run on it.
+		if(not(cellLoc%grid.info.width == 0)):
+			getClosestFronteir(grid, cellLoc-1)
+		#If right cell exists run on it.
+		if(not(cellLoc%grid.info.width == grid.info.width-1)):
+			getClosestFronteir(grid, cellLoc+1)
+		#If top cell exists run on it.
+		if(not(cellLoc-grid.info.width < 0)):
+			getClosestFronteir(grid, cellLoc-grid.info.width)
+		#if bottom cell exists run on it.
+		if(not(cellLoc+grid.info.width > grid.info.width*grid.info.height-1)):
+			getClosestFronteir(grid, cellLoc+grid.info.width)
+
+	#If there's nothing left to run on, return -1.
+	elif():
+		return -1
+
 
 def run():
 
