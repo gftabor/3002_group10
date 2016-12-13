@@ -1,0 +1,14 @@
+Pull both planner and this repo side by side
+
+Every C++ change
+catkin_make
+
+Once Per file
+chmod +x lab2.py
+chmod +x lab4.py
+
+TO RUN
+roslaunch src/3002_group10/final.launch 
+
+
+

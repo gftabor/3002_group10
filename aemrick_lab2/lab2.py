@@ -168,7 +168,7 @@ def timerCallback(event):
     global yPosition
     global theta
     #obtain odometry data from frame 'odom' to frame 'base_footprint'
-    odom_list.waitForTransform('odom','base_footprint', rospy.Time(0), rospy.Duration(1.0))
+    odom_list.waitForTransform('odom','base_footprint', rospy.Time(0), rospy.Duration(100.0))
     #store the information in position and orientation
     (position, orientation) = odom_list.lookupTransform('odom','base_footprint', rospy.Time(0))
     pose.position.x=position[0]
@@ -188,7 +188,7 @@ def timerCallback(event):
 # This is the program's main function
 if __name__ == '__main__':
     rospy.init_node('aemrick_lab2')
-    
+    print "lab2 init"
     #global variables
     global pub
     global pose
