@@ -165,18 +165,28 @@ def getClosestFronteir(grid, cellLoc):
 		nextcellLoc = cellLoc
 		if(not(cellLoc%grid.info.width == 0)):
 			nextcellLoc = cellLoc-1
+			output = getClosestFronteir(grid,nextcellLoc)
+			if(output is not -1):
+				return output
 		#If right cell exists run on it.
 		if(not(cellLoc%grid.info.width == grid.info.width-1)):
 			nextcellLoc = cellLoc+1
+			output = getClosestFronteir(grid,nextcellLoc)
+			if(output is not -1):
+				return output
 		#If top cell exists run on it.
 		if(not(cellLoc-grid.info.width < 0)):
 			nextcellLoc = cellLoc-grid.info.width
+			output = getClosestFronteir(grid,nextcellLoc)
+			if(output is not -1):
+				return output
 		#if bottom cell exists run on it.
 		if(not(cellLoc+grid.info.width > grid.info.width*grid.info.height-1)):
 			nextcellLoc = cellLoc+grid.info.width
-		output = getClosestFronteir(grid,nextcellLoc)
-		if(output is not -1):
-			return output
+			output = getClosestFronteir(grid,nextcellLoc)
+			if(output is not -1):
+					return output
+		
 	#If there's nothing left to run on, return -1.
 	elif():
 		return -1
