@@ -73,16 +73,15 @@ def navToPose(goal):
     angle = math.degrees(math.atan2(desiredY - yPosition, desiredX - xPosition))
 
     #turn to initial angle
-    rotate(angle)
-    print 'did pose'
+    faceAngle(angle)
     #drive to goal
     driveStraight(0.25, distance)
     #finish orientation
-    rotate(desiredT)
+    #rotate(desiredT)
     #chill for a little
     newHeader = Header()
     header_pub.publish(newHeader)
-
+    print 'request new waypoint'
     rospy.sleep(.15)
 
 #This function accepts a speed and a distance for the robot to move in straight line
@@ -118,10 +117,7 @@ def faceAngle(angle):
      
     while(math.fabs(error) >=2 and not rospy.is_shutdown()): #if you haven't reached the goal and you're still trying to
         error = angle - math.degrees(pose.orientation.z) #recalculate error since you've probably moved
-        while(math.fabs(error)>180):
-            error = error - math.copysign(360,error) #if you ended up turned 180, fix your error calculation
-        print error
-        publishTwist(0,math.copysign(1,error)) #set angular velocity to degrees to specified angle    
+        publishTwist(0,math.copysign(0.8,error)) #set angular velocity to degrees to specified angle    
 
 #rotates a certain number of degrees, angle, regardless of global positioning
 def rotate(angle):
@@ -159,7 +155,7 @@ def driveArc(radius, speed, angleArc):
 def readBumper(msg):
     if (msg.state == 1):
         print "Bumper is pressed"
-        executeTrajectory() #execute trajectory function when the bumper is pressed
+        #executeTrajectory() #execute trajectory function when the bumper is pressed
 
 #timer callback, executes every .01s in rospy.Timer in main
 def timerCallback(event):
@@ -202,7 +198,7 @@ if __name__ == '__main__':
     pub = rospy.Publisher('/cmd_vel_mux/input/teleop', Twist, None, queue_size=10) # Publisher for commanding robot motion
     bumper_sub = rospy.Subscriber('/mobile_base/events/bumper', BumperEvent, readBumper, queue_size=1) # Callback function to handle bumper events
     goal_sub = rospy.Subscriber('/way_point', PoseStamped, navToPose, queue_size=100)
-    header_pub = rospy.Publisher('Way_point_success', Header,queue_size=1)
+    header_pub = rospy.Publisher('way_point_success', Header,queue_size=1)
     # Use this object to get the robot's Odometry 
     odom_list = tf.TransformListener()
     
@@ -212,14 +208,14 @@ if __name__ == '__main__':
     print "Starting Lab 2"
     
     faceAngle(0)
+    rospy.sleep(1.5)
     faceAngle(90)
+    rospy.sleep(1.5)
     faceAngle(180)
+    rospy.sleep(1.5)
     faceAngle(-90)
+    rospy.sleep(1.5)
     faceAngle(0)
-    faceAngle(90)
-    faceAngle(180)
-
-
 
     newHeader = Header()
     header_pub.publish(newHeader)

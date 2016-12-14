@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+from std_msgs.msg import Header
 from geometry_msgs.msg import Twist, Point, Pose, PoseStamped, PoseWithCovarianceStamped
 from nav_msgs.msg import Odometry, OccupancyGrid, Path
 import rospy, tf, numpy, math
@@ -11,12 +11,13 @@ def path_callback(input_path):
 	global index 
 	global length
 	print "saw path"
-	length =  len(input_path.poses)
-	print length
+	print  len(input_path.poses)
 	#flip list around
 	path = list(input_path.poses)
 	path.reverse()
 	path = optimize_path(path)
+	length = len(path)
+	print length
 	#publish first goal in list
 	pointpub.publish(path[0])
 	index = 1
@@ -29,7 +30,7 @@ def optimize_path(shitty_path):
 		if(i is not len(shitty_path)-1 and i is not 0):
 			next = shitty_path[i+1]
 			last = shitty_path[i-1]
-			if(str(next.pose.position.x - PoseStamped.pose.position.x) is str(PoseStamped.pose.position.x - last.pose.position.x)):
+			if(math.fabs((next.pose.position.x - PoseStamped.pose.position.x) -(PoseStamped.pose.position.x - last.pose.position.x)) < 0.01 ):
 				usefulPoint = 0
 		if(usefulPoint):
 			good_path.append(PoseStamped)
@@ -46,7 +47,7 @@ def obstacleExpansion(grid):
 	#This array is used to designate the index of cells that will become obstacles.
 	toBeObstacle = []
 
-	print "started"
+	#print "started"
 	#Runs through all cells in the grid.
 	for i in range(0,len(cells)):
 		#If a cell is an obstacle the loop will make the four adjacent cells obstacles.
@@ -100,11 +101,11 @@ def obstacleExpansion(grid):
 def checkTimesExpanded(resolution):
 	global timesExpanded
 
-	print timesExpanded
+	#print timesExpanded
 
 	timesExpanded = timesExpanded+1
 
-	if(timesExpanded >= 0.35/resolution):
+	if(timesExpanded >= 0.2/resolution):
 		timesExpanded=0
 		return True
 	else:
@@ -113,13 +114,14 @@ def checkTimesExpanded(resolution):
 	
 
 
-def waypoint_callback():
+def waypoint_callback(msg):
 	global pointpub
 	global startFlag
 	global path
 	global index
+	print 'saw waypoint'
 	if(startFlag == 1):
-		if(index<length):
+		if(index<length-1):
 			pointpub.publish(path[index])
 		index = index + 1
 	startFlag = 1
@@ -163,6 +165,8 @@ def run():
 	global mappub
 	rospy.init_node('move_robot', anonymous=True)
 	path_sub = rospy.Subscriber('/totes_path', Path, path_callback, queue_size=1) #change topic for best results
+	header_sub = rospy.Subscriber('/way_point_success', Header, waypoint_callback, queue_size=1) #change topic for best results
+
 	pointpub = rospy.Publisher("way_point", PoseStamped, queue_size=100)
 	mappub = rospy.Publisher("/map_real", OccupancyGrid, queue_size=1)
 
@@ -175,7 +179,8 @@ if __name__ == '__main__':
 
 	global timesExpanded
 	timesExpanded = 0
-
+	global startFlag
+	startFlag = 0
 	global mapGrid
 
 
