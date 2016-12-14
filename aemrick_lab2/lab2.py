@@ -58,6 +58,7 @@ def navToPose(goal):
     global xPosition
     global yPosition
     global theta
+    global move_pub
     #get desired positions from goal from rviz click
     desiredY = goal.pose.position.y
     desiredX = goal.pose.position.x
@@ -66,19 +67,14 @@ def navToPose(goal):
     q = [quat.x, quat.y, quat.z, quat.w]
     roll, pitch, yaw = euler_from_quaternion(q)
     desiredT = math.degrees(yaw)
-
-    #compute distance to goal
-    distance = math.sqrt((desiredX - xPosition)**2 + (desiredY - yPosition)**2)
-    #compute initial turn amount
-    angle = math.degrees(math.atan2(desiredY - yPosition, desiredX - xPosition))
-
-    #turn to initial angle
-    faceAngle(angle)
-    #drive to goal
-    driveStraight(0.25, distance)
-    #finish orientation
-    #rotate(desiredT)
-    #chill for a little
+    move_pub.publish(goal)
+    distance =1
+    startTime = rospy.Time.now().secs
+    while(math.fabs(distance)>0.1 and rospy.Time.now().secs-startTime < 8):
+        rospy.sleep(0.05)
+        #move_pub.publish(goal)
+        distance = math.sqrt((desiredX - xPosition)**2 + (desiredY - yPosition)**2)
+        #print distance
     newHeader = Header()
     header_pub.publish(newHeader)
     print 'request new waypoint'
@@ -117,7 +113,9 @@ def faceAngle(angle):
      
     while(math.fabs(error) >=2 and not rospy.is_shutdown()): #if you haven't reached the goal and you're still trying to
         error = angle - math.degrees(pose.orientation.z) #recalculate error since you've probably moved
-        publishTwist(0,math.copysign(0.8,error)) #set angular velocity to degrees to specified angle    
+        while(math.fabs(error)>180): 
+            error = error - math.copysign(360,error) #if you ended up turned 180, fix your error calculation 
+        publishTwist(0,math.copysign(1,error)) #set angular velocity to degrees to specified angle    
 
 #rotates a certain number of degrees, angle, regardless of global positioning
 def rotate(angle):
@@ -165,9 +163,9 @@ def timerCallback(event):
     global yPosition
     global theta
     #obtain odometry data from frame 'odom' to frame 'base_footprint'
-    odom_list.waitForTransform('odom','base_footprint', rospy.Time(0), rospy.Duration(100.0))
+    odom_list.waitForTransform('map','base_footprint', rospy.Time(0), rospy.Duration(100.0))
     #store the information in position and orientation
-    (position, orientation) = odom_list.lookupTransform('odom','base_footprint', rospy.Time(0))
+    (position, orientation) = odom_list.lookupTransform('map','base_footprint', rospy.Time(0))
     pose.position.x=position[0]
     pose.position.y=position[1]
     #these are repetitive but it helps to have them stored globally (navToPose uses them)
@@ -192,6 +190,7 @@ if __name__ == '__main__':
     global odom_tf
     global odom_list
     global header_pub
+    global move_pub
     pose = Pose()
     
     #Publishers and Subscribers
@@ -199,6 +198,8 @@ if __name__ == '__main__':
     bumper_sub = rospy.Subscriber('/mobile_base/events/bumper', BumperEvent, readBumper, queue_size=1) # Callback function to handle bumper events
     goal_sub = rospy.Subscriber('/way_point', PoseStamped, navToPose, queue_size=100)
     header_pub = rospy.Publisher('way_point_success', Header,queue_size=1)
+    move_pub = rospy.Publisher('/move_base_simple/goal',PoseStamped,queue_size=1)
+
     # Use this object to get the robot's Odometry 
     odom_list = tf.TransformListener()
     
@@ -215,6 +216,10 @@ if __name__ == '__main__':
     rospy.sleep(1.5)
     faceAngle(-90)
     rospy.sleep(1.5)
+    faceAngle(0)
+    faceAngle(90)
+    faceAngle(180)
+    faceAngle(-90)
     faceAngle(0)
 
     newHeader = Header()

@@ -105,7 +105,7 @@ def checkTimesExpanded(resolution):
 
 	timesExpanded = timesExpanded+1
 
-	if(timesExpanded >= 0.2/resolution):
+	if(timesExpanded >= 0.31/resolution):
 		timesExpanded=0
 		return True
 	else:
@@ -123,6 +123,8 @@ def waypoint_callback(msg):
 	if(startFlag == 1):
 		if(index<length-1):
 			pointpub.publish(path[index])
+		else:
+			print 'path finished'
 		index = index + 1
 	startFlag = 1
 
