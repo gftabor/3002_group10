@@ -95,9 +95,28 @@ def obstacleExpansion(grid):
 	#Publishes the grid as a changed map if expanded enough, else expands again.
 	if(checkTimesExpanded(grid.info.resolution)):
 		mappub.publish(newGrid)
-
+		x = xPosition- newGrid.info.origin.position.x)/grid.info.resolution -1.5;
+		x = int(x)
+		y = (yPosition - newGrid.info.origin.position.7)/grid.info.resolution +0.5;
+		y = int(y)
+		cellLoc = (x+1 + (y-1)*width)
+		getClosestFronteir(newGrid,)
 	else:
 		obstacleExpansion(newGrid)
+def timerCallback(event):
+   
+    global pose
+    global xPosition
+    global yPosition
+    global theta
+    #obtain odometry data from frame 'odom' to frame 'base_footprint'
+    odom_list.waitForTransform('map','base_footprint', rospy.Time(0), rospy.Duration(100.0))
+    #store the information in position and orientation
+    (position, orientation) = odom_list.lookupTransform('map','base_footprint', rospy.Time(0))
+    #these are repetitive but it helps to have them stored globally (navToPose uses them)
+    xPosition=position[0]
+    yPosition=position[1]
+
 
 def checkTimesExpanded(resolution):
 	global timesExpanded
@@ -177,6 +196,10 @@ def run():
 	mappub = rospy.Publisher("/map_real", OccupancyGrid, queue_size=1)
 
 	mapsub = rospy.Subscriber('/map',OccupancyGrid,obstacleExpansion, queue_size=1)
+    odom_list = tf.TransformListener()
+    
+    rospy.Timer(rospy.Duration(.01), timerCallback) #update odometry data captured in timerCallback every .01ms
+    
     # spin() simply keeps python from exiting until this node is stopped
 	rospy.spin()
 
