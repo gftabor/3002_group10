@@ -95,6 +95,7 @@ def obstacleExpansion(grid):
 	#Publishes the grid as a changed map if expanded enough, else expands again.
 	if(checkTimesExpanded(grid.info.resolution)):
 		mappub.publish(newGrid)
+
 	else:
 		obstacleExpansion(newGrid)
 
@@ -142,18 +143,21 @@ def getClosestFronteir(grid, cellLoc):
 	#RECURSIVE CASE: If the cell is known run recursion on all four nearby cells.
 	elif(cells[cellLoc] == 0):
 		#If left cell exists run on it.
+		nextcellLoc = cellLoc
 		if(not(cellLoc%grid.info.width == 0)):
-			getClosestFronteir(grid, cellLoc-1)
+			nextcellLoc = cellLoc-1
 		#If right cell exists run on it.
 		if(not(cellLoc%grid.info.width == grid.info.width-1)):
-			getClosestFronteir(grid, cellLoc+1)
+			nextcellLoc = cellLoc+1
 		#If top cell exists run on it.
 		if(not(cellLoc-grid.info.width < 0)):
-			getClosestFronteir(grid, cellLoc-grid.info.width)
+			nextcellLoc = cellLoc-grid.info.width
 		#if bottom cell exists run on it.
 		if(not(cellLoc+grid.info.width > grid.info.width*grid.info.height-1)):
-			getClosestFronteir(grid, cellLoc+grid.info.width)
-
+			nextcellLoc = cellLoc+grid.info.width
+		output = getClosestFronteir(grid,nextcellLoc)
+		if(output is not -1):
+			return output
 	#If there's nothing left to run on, return -1.
 	elif():
 		return -1
@@ -185,10 +189,6 @@ if __name__ == '__main__':
 	startFlag = 0
 	global mapGrid
 
-
-	rospy.set_param('/move_base/global_costmap/inflation_layer/inflation_radius', '20')
-
-#/move_base/global_costmap/inflation_layer/inflation_radius
 
 	run()
     
