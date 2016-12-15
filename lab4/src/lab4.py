@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from std_msgs.msg import Header
+from std_msgs.msg import Header, Int64
 from geometry_msgs.msg import Twist, Point, Pose, PoseStamped, PoseWithCovarianceStamped
 from nav_msgs.msg import Odometry, OccupancyGrid, Path
 import rospy, tf, numpy, math
@@ -10,18 +10,18 @@ def path_callback(input_path):
 	global path 
 	global index 
 	global length
-	print "saw path"
-	print  len(input_path.poses)
+	#print "saw path"
+	#print  len(input_path.poses)
 	#flip list around
 	path = list(input_path.poses)
 	path.reverse()
 	path = optimize_path(path)
 	length = len(path)
-	print length
+	#print length
 	#publish first goal in list
 	pointpub.publish(path[0])
 	index = 1
-	print"new point"
+	#print"new point"
 def optimize_path(shitty_path):
 	good_path = []
 	good_path.append(shitty_path[0])
@@ -39,6 +39,8 @@ def optimize_path(shitty_path):
 
 #Expands obstacles in the grid to allow easier navagation.
 def obstacleExpansion(grid):
+	global xPosition
+	global yPosition
 	global mappub
 
 	#Put all cells in grid in a global array.
@@ -95,14 +97,30 @@ def obstacleExpansion(grid):
 	#Publishes the grid as a changed map if expanded enough, else expands again.
 	if(checkTimesExpanded(grid.info.resolution)):
 		mappub.publish(newGrid)
-		x = xPosition- newGrid.info.origin.position.x)/grid.info.resolution -1.5;
-		x = int(x)
-		y = (yPosition - newGrid.info.origin.position.7)/grid.info.resolution +0.5;
-		y = int(y)
-		cellLoc = (x+1 + (y-1)*width)
-		getClosestFronteir(newGrid,)
+		if(startFlag is 1):	
+			x = (xPosition- newGrid.info.origin.position.x)/grid.info.resolution -1.5;
+			x = int(x)
+			y = (yPosition - newGrid.info.origin.position.y)/grid.info.resolution +0.5;
+			y = int(y)
+			cellLoc = (x+1 + (y-1)*grid.info.width)
+		
+			print 'finding frontier'
+			print cellLoc
+			fronteir = getClosestFronteir(newGrid,cellLoc)
+			print 'frontier' ,fronteir
+			goalssssssss = PoseStamped()
+			goalssssssss.pose.position.x = (((fronteir%grid.info.width)+1.5)*grid.info.resolution)+newGrid.info.origin.position.x
+			goalssssssss.pose.position.y = (((fronteir/grid.info.width)-0.5)*grid.info.resolution)+newGrid.info.origin.position.y
+			goalssssssss.orientation.w=1
+
+
+
+			goalpub.publish(goalssssssss)
+
+			print 'found'
 	else:
 		obstacleExpansion(newGrid)
+
 def timerCallback(event):
    
     global pose
@@ -139,7 +157,7 @@ def waypoint_callback(msg):
 	global startFlag
 	global path
 	global index
-	print 'saw waypoint'
+	#print 'saw waypoint'
 	if(startFlag == 1):
 		if(index<length-1):
 			pointpub.publish(path[index])
@@ -149,47 +167,75 @@ def waypoint_callback(msg):
 	startFlag = 1
 
 
-#Recursive function. Takes in a grid and starting cell location and returns the numerical location 
-#in the list of cells of the closest frontier, -1 if none exist in the enclosed space.
-def getClosestFronteir(grid, cellLoc):
-	#Define the list of cells as the grid's cells.
+
+def getClosestFronteir(grid, startingLoc):
+	global xPosition
+	global yPosition
+	global iterations
+	global breadth_pub
+	print 'called'
+	#Put all cells in grid in a global array.
 	cells = grid.data
 
-	#BASE CASE: If the cell is a fronteir, return the location of the cell.
-	if(cells[cellLoc] == -1):
-		return cellLoc
+	cells[startingLoc] = 5
 
-	#RECURSIVE CASE: If the cell is known run recursion on all four nearby cells.
-	elif(cells[cellLoc] == 0):
-		#If left cell exists run on it.
-		nextcellLoc = cellLoc
-		if(not(cellLoc%grid.info.width == 0)):
-			nextcellLoc = cellLoc-1
-			output = getClosestFronteir(grid,nextcellLoc)
-			if(output is not -1):
-				return output
-		#If right cell exists run on it.
-		if(not(cellLoc%grid.info.width == grid.info.width-1)):
-			nextcellLoc = cellLoc+1
-			output = getClosestFronteir(grid,nextcellLoc)
-			if(output is not -1):
-				return output
-		#If top cell exists run on it.
-		if(not(cellLoc-grid.info.width < 0)):
-			nextcellLoc = cellLoc-grid.info.width
-			output = getClosestFronteir(grid,nextcellLoc)
-			if(output is not -1):
-				return output
-		#if bottom cell exists run on it.
-		if(not(cellLoc+grid.info.width > grid.info.width*grid.info.height-1)):
-			nextcellLoc = cellLoc+grid.info.width
-			output = getClosestFronteir(grid,nextcellLoc)
-			if(output is not -1):
-					return output
-		
-	#If there's nothing left to run on, return -1.
-	elif():
-		return -1
+	#This array is used to designate the index of cells that will be checked by the function.
+	toBeChecked = []
+	iterations = iterations+1
+	print 'iterations', iterations
+	#Runs through all cells in the grid.
+	for i in range(0,len(cells)):
+		#If a cell has been checked the loop will make the four adjacent cells obstacles.
+
+		if (cells[i] is 5):
+			#Calculates edge case for the cell left of the given obstacle cell.
+			if(i%grid.info.width == 0):
+				left = i
+			else:
+				left = i-1;
+
+			#Calculates edge case for the cell right of the given obstacle cell.
+			if(i%grid.info.width == grid.info.width-1):
+				right = i
+			else:
+				right = i+1
+
+			#Calculates edge case for the cell top of the given obstacle cell.
+			if(i-grid.info.width < 0):
+				top = i
+			else:
+				top = i-grid.info.width
+
+			#Calculates edge case for the cell bottom of the given obstacle cell.
+			if(i+grid.info.width > grid.info.width*grid.info.height-1):
+				bottom = i
+			else:
+				bottom = i+grid.info.width
+
+			#Adds the location of the given cells to the array to be changed.
+			toBeChecked.append(left)
+			toBeChecked.append(right)
+			toBeChecked.append(top)
+			toBeChecked.append(bottom)
+
+	#Loops through the array and changes each value in the array of cells to determine if it was checked for frontiers.
+	l = list(grid.data)
+	for j in range(0,len(toBeChecked)):
+		#print len(toBeChecked)
+		if(l[toBeChecked[j]] is -1):
+			print 'returned', toBeChecked[j]
+			return toBeChecked[j]
+
+		l[toBeChecked[j]] = 5
+
+	newGrid = OccupancyGrid()
+	newGrid.info = grid.info
+	newGrid.data = l
+	breadth_pub.publish(newGrid)
+
+
+	return getClosestFronteir(newGrid, startingLoc)
+
 
 
 def run():
@@ -198,17 +244,21 @@ def run():
 
 	global pointpub
 	global mappub
+	global odom_list
+	global goalpub
+	global iterations
+	global breadth_pub
+	iterations =0
 	rospy.init_node('move_robot', anonymous=True)
 	path_sub = rospy.Subscriber('/totes_path', Path, path_callback, queue_size=1) #change topic for best results
 	header_sub = rospy.Subscriber('/way_point_success', Header, waypoint_callback, queue_size=1) #change topic for best results
-
-	pointpub = rospy.Publisher("way_point", PoseStamped, queue_size=100)
+rv	pointpub = rospy.Publisher("way_point", PoseStamped, queue_size=100)
 	mappub = rospy.Publisher("/map_real", OccupancyGrid, queue_size=1)
-
+	goalpub = rospy.Publisher("goal", Int64, queue_size=100)
 	mapsub = rospy.Subscriber('/map',OccupancyGrid,obstacleExpansion, queue_size=1)
-    odom_list = tf.TransformListener()
+	odom_list = tf.TransformListener()
     
-    rospy.Timer(rospy.Duration(.01), timerCallback) #update odometry data captured in timerCallback every .01ms
+	rospy.Timer(rospy.Duration(.01), timerCallback) #update odometry data captured in timerCallback every .01ms
     
     # spin() simply keeps python from exiting until this node is stopped
 	rospy.spin()
