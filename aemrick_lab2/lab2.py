@@ -111,11 +111,11 @@ def faceAngle(angle):
 
     error = angle - math.degrees(pose.orientation.z) #calculate error
      
-    while(math.fabs(error) >=2 and not rospy.is_shutdown()): #if you haven't reached the goal and you're still trying to
+    while(math.fabs(error) >=5 and not rospy.is_shutdown()): #if you haven't reached the goal and you're still trying to
         error = angle - math.degrees(pose.orientation.z) #recalculate error since you've probably moved
         while(math.fabs(error)>180): 
             error = error - math.copysign(360,error) #if you ended up turned 180, fix your error calculation 
-        publishTwist(0,math.copysign(1,error)) #set angular velocity to degrees to specified angle    
+        publishTwist(0,math.copysign(1.2,error)) #set angular velocity to degrees to specified angle    
 
 #rotates a certain number of degrees, angle, regardless of global positioning
 def rotate(angle):
@@ -209,18 +209,23 @@ if __name__ == '__main__':
     print "Starting Lab 2"
     
     faceAngle(0)
+    print '1'
     rospy.sleep(1.5)
     faceAngle(90)
     rospy.sleep(1.5)
+    print '2'
     faceAngle(180)
     rospy.sleep(1.5)
     faceAngle(-90)
     rospy.sleep(1.5)
+    print '3'
     faceAngle(0)
     faceAngle(90)
     faceAngle(180)
+    print '4'
     faceAngle(-90)
     faceAngle(0)
+    print '5'
 
     newHeader = Header()
     header_pub.publish(newHeader)

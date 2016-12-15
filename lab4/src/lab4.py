@@ -111,7 +111,7 @@ def obstacleExpansion(grid):
 			goalssssssss = PoseStamped()
 			goalssssssss.pose.position.x = (((fronteir%grid.info.width)+1.5)*grid.info.resolution)+newGrid.info.origin.position.x
 			goalssssssss.pose.position.y = (((fronteir/grid.info.width)-0.5)*grid.info.resolution)+newGrid.info.origin.position.y
-			goalssssssss.orientation.w=1
+			goalssssssss.pose.orientation.w=1
 
 
 
@@ -189,25 +189,25 @@ def getClosestFronteir(grid, startingLoc):
 
 		if (cells[i] is 5):
 			#Calculates edge case for the cell left of the given obstacle cell.
-			if(i%grid.info.width == 0):
+			if((i%grid.info.width == 0) or (cells[i-1] is 100)):
 				left = i
 			else:
 				left = i-1;
 
 			#Calculates edge case for the cell right of the given obstacle cell.
-			if(i%grid.info.width == grid.info.width-1):
+			if((i%grid.info.width == grid.info.width-1) or (cells[i+1] is 100)):
 				right = i
 			else:
 				right = i+1
 
 			#Calculates edge case for the cell top of the given obstacle cell.
-			if(i-grid.info.width < 0):
+			if((i-grid.info.width < 0) or (cells[i-grid.info.width] is 100)):
 				top = i
 			else:
 				top = i-grid.info.width
 
 			#Calculates edge case for the cell bottom of the given obstacle cell.
-			if(i+grid.info.width > grid.info.width*grid.info.height-1):
+			if((i+grid.info.width > grid.info.width*grid.info.height-1) or (cells[i+grid.info.width] is 100)):
 				bottom = i
 			else:
 				bottom = i+grid.info.width
@@ -252,9 +252,10 @@ def run():
 	rospy.init_node('move_robot', anonymous=True)
 	path_sub = rospy.Subscriber('/totes_path', Path, path_callback, queue_size=1) #change topic for best results
 	header_sub = rospy.Subscriber('/way_point_success', Header, waypoint_callback, queue_size=1) #change topic for best results
-rv	pointpub = rospy.Publisher("way_point", PoseStamped, queue_size=100)
+	pointpub = rospy.Publisher("way_point", PoseStamped, queue_size=100)
+	breadth_pub = rospy.Publisher("/map_fake", OccupancyGrid, queue_size=1)
 	mappub = rospy.Publisher("/map_real", OccupancyGrid, queue_size=1)
-	goalpub = rospy.Publisher("goal", Int64, queue_size=100)
+	goalpub = rospy.Publisher("goal", PoseStamped, queue_size=100)
 	mapsub = rospy.Subscriber('/map',OccupancyGrid,obstacleExpansion, queue_size=1)
 	odom_list = tf.TransformListener()
     
