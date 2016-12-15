@@ -106,6 +106,7 @@ def obstacleExpansion(grid):
 		
 			print 'finding frontier'
 			print cellLoc
+			iterations = 0
 			fronteir = getClosestFronteir(newGrid,cellLoc)
 			print 'frontier' ,fronteir
 			goalssssssss = PoseStamped()
