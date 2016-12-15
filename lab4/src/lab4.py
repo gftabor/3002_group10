@@ -19,8 +19,8 @@ def path_callback(input_path):
 	length = len(path)
 	#print length
 	#publish first goal in list
-	pointpub.publish(path[0])
-	index = 1
+	pointpub.publish(path[-1])
+	index = len(path) +1
 	#print"new point"
 def optimize_path(shitty_path):
 	good_path = []
@@ -104,11 +104,11 @@ def obstacleExpansion(grid):
 			y = int(y)
 			cellLoc = (x+1 + (y-1)*grid.info.width)
 		
-			print 'finding frontier'
-			print cellLoc
+			#print 'finding frontier'
+			#print cellLoc
 			iterations = 0
 			fronteir = getClosestFronteir(newGrid,cellLoc)
-			print 'frontier' ,fronteir
+			#print 'frontier' ,fronteir
 			goalssssssss = PoseStamped()
 			goalssssssss.pose.position.x = (((fronteir%grid.info.width)+1.5)*grid.info.resolution)+newGrid.info.origin.position.x
 			goalssssssss.pose.position.y = (((fronteir/grid.info.width)-0.5)*grid.info.resolution)+newGrid.info.origin.position.y
@@ -174,7 +174,7 @@ def getClosestFronteir(grid, startingLoc):
 	global yPosition
 	global iterations
 	global breadth_pub
-	print 'called'
+	#print 'called'
 	#Put all cells in grid in a global array.
 	cells = grid.data
 
@@ -183,48 +183,51 @@ def getClosestFronteir(grid, startingLoc):
 	#This array is used to designate the index of cells that will be checked by the function.
 	toBeChecked = []
 	iterations = iterations+1
-	print 'iterations', iterations
+	#print 'iterations', iterations
 	#Runs through all cells in the grid.
 	for i in range(0,len(cells)):
 		#If a cell has been checked the loop will make the four adjacent cells obstacles.
-
 		if (cells[i] is 5):
 			#Calculates edge case for the cell left of the given obstacle cell.
-			if((i%grid.info.width == 0) or (cells[i-1] is 100)):
+			if((i%grid.info.width == 0) or (cells[i-1] is 100) or cells[i-1] is 5):
 				left = i
 			else:
 				left = i-1;
+				toBeChecked.append(left)
+
 
 			#Calculates edge case for the cell right of the given obstacle cell.
-			if((i%grid.info.width == grid.info.width-1) or (cells[i+1] is 100)):
+			if((i%grid.info.width == grid.info.width-1) or (cells[i+1] is 100) or cells[i+1] is 5):
 				right = i
 			else:
 				right = i+1
+				toBeChecked.append(right)
+
 
 			#Calculates edge case for the cell top of the given obstacle cell.
-			if((i-grid.info.width < 0) or (cells[i-grid.info.width] is 100)):
+			if((i-grid.info.width < 0) or (cells[i-grid.info.width] is 100) or cells[i-grid.info.width] is 5):
 				top = i
 			else:
 				top = i-grid.info.width
+				toBeChecked.append(top)
+
 
 			#Calculates edge case for the cell bottom of the given obstacle cell.
-			if((i+grid.info.width > grid.info.width*grid.info.height-1) or (cells[i+grid.info.width] is 100)):
+			if((i+grid.info.width > grid.info.width*grid.info.height-1) or (cells[i+grid.info.width] is 100) or cells[i+grid.info.width] is 5):
 				bottom = i
 			else:
 				bottom = i+grid.info.width
-
-			#Adds the location of the given cells to the array to be changed.
-			toBeChecked.append(left)
-			toBeChecked.append(right)
-			toBeChecked.append(top)
-			toBeChecked.append(bottom)
+				toBeChecked.append(bottom)
 
 	#Loops through the array and changes each value in the array of cells to determine if it was checked for frontiers.
+	if(len(toBeChecked) is 0):
+		print 'done'
+		return -1
 	l = list(grid.data)
 	for j in range(0,len(toBeChecked)):
 		#print len(toBeChecked)
 		if(l[toBeChecked[j]] is -1):
-			print 'returned', toBeChecked[j]
+			#print 'returned', toBeChecked[j]
 			return toBeChecked[j]
 
 		l[toBeChecked[j]] = 5
@@ -233,7 +236,6 @@ def getClosestFronteir(grid, startingLoc):
 	newGrid.info = grid.info
 	newGrid.data = l
 	breadth_pub.publish(newGrid)
-
 
 	return getClosestFronteir(newGrid, startingLoc)
 

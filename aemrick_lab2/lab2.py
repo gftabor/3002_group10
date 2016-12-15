@@ -70,7 +70,7 @@ def navToPose(goal):
     move_pub.publish(goal)
     distance =1
     startTime = rospy.Time.now().secs
-    while(math.fabs(distance)>0.1 and rospy.Time.now().secs-startTime < 8):
+    while(math.fabs(distance)>0.1 and rospy.Time.now().secs-startTime < 15):
         rospy.sleep(0.05)
         #move_pub.publish(goal)
         distance = math.sqrt((desiredX - xPosition)**2 + (desiredY - yPosition)**2)
@@ -226,9 +226,20 @@ if __name__ == '__main__':
     faceAngle(-90)
     faceAngle(0)
     print '5'
+    rospy.sleep(1.5)
+    faceAngle(90)
+    rospy.sleep(1.5)
+    print '6'
+    faceAngle(180)
+    rospy.sleep(1.5)
+    faceAngle(-90)
+    rospy.sleep(1.5)
+    print '7'
+    faceAngle(0)
 
     newHeader = Header()
     header_pub.publish(newHeader)
+    faceAngle(90)
     
     while (not rospy.is_shutdown()):
         rospy.spin()
